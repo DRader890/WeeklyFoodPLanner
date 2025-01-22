@@ -30,32 +30,21 @@ export const getMealTimesByUser = async () => {
   }
 };
 
-export const addFoodToMealTime = async (mealTimeId, foodId) => {
+export const assignFoodsToMealTime = async (mealTimeId, foodIds) => {
   try {
-    const response = await fetch(`${apiUrl}/${mealTimeId}/foods/${foodId}`, {
+    const response = await fetch(`${apiUrl}/assign`, {
       method: "POST",
       credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ MealTimeId: mealTimeId, FoodIds: foodIds }),
     });
     if (!response.ok) {
-      throw new Error("Failed to add food to mealtime");
+      throw new Error("Failed to assign foods to mealtime");
     }
   } catch (error) {
-    console.error("Error adding food to mealtime:", error);
-    throw error;
-  }
-};
-
-export const deleteFoodFromMealTime = async (mealTimeId, foodId) => {
-  try {
-    const response = await fetch(`${apiUrl}/${mealTimeId}/foods/${foodId}`, {
-      method: "DELETE",
-      credentials: "same-origin",
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete food from mealtime");
-    }
-  } catch (error) {
-    console.error("Error deleting food from mealtime:", error);
+    console.error("Error assigning foods to mealtime:", error);
     throw error;
   }
 };

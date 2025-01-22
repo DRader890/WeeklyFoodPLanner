@@ -3,9 +3,9 @@ namespace Foodie.Models.DTOs
     public class MealTimeDTO
     {
         public int Id { get; set; }
-        public int DayId { get; set; }
         public string Name { get; set; }
-        public List<FoodDTO> Foods { get; set; } // Add this property
+        public int UserProfileId { get; set; } // Foreign Key to UserProfile
+        public List<MealDTO> Meals { get; set; } // List of Meal DTOs
     }
 
 }

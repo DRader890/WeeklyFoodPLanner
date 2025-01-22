@@ -1,82 +1,113 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Foodie.Data;
 using Foodie.Models;
 using Foodie.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace Foodie.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class MealTimeController : ControllerBase
     {
         private readonly FoodieDbContext _dbContext;
-        private readonly ILogger<MealTimeController> _logger;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public MealTimeController(FoodieDbContext dbContext, ILogger<MealTimeController> logger)
+        public MealTimeController(FoodieDbContext dbContext, UserManager<IdentityUser> userManager)
         {
             _dbContext = dbContext;
-            _logger = logger;
+            _userManager = userManager;
         }
 
-        // GET: api/mealtime
-        [HttpGet]
-        public async Task<IActionResult> GetAllMealTimes()
+        // GET: api/mealtime/user
+        [HttpGet("user")]
+        [Authorize]
+        public async Task<IActionResult> GetMealTimesByUser()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            _logger.LogInformation($"Fetching meal times for user: {userId}");
+            var user = await _userManager.GetUserAsync(User);
 
-            var mealTimes = await _dbContext.MealTimes
-                .Include(mt => mt.Meals)
-                .ThenInclude(m => m.Foods)
-                .Where(mt => mt.UserProfileId == userId)
-                .Select(mt => new MealTimeDTO
-                {
-                    Id = mt.Id,
-                    Name = mt.Name,
-                    DayId = mt.DayId,
-                    Foods = mt.Meals.SelectMany(m => m.Foods).Select(f => new FoodDTO
-                    {
-                        Id = f.Id,
-                        Name = f.Name
-                    }).ToList()
-                })
-                .ToListAsync();
-
-            return Ok(mealTimes);
-        }
-
-        // GET: api/mealtime/{dayId}
-        [HttpGet("{dayId}")]
-        public async Task<IActionResult> GetMealTimesByDay(int dayId)
-        {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var mealTimes = await _dbContext.MealTimes
-                .Where(mt => mt.DayId == dayId && mt.UserProfileId == userId)
-                .Include(mt => mt.Meals)
-                .ThenInclude(m => m.Foods)
-                .Select(mt => new MealTimeDTO
-                {
-                    Id = mt.Id,
-                    Name = mt.Name,
-                    DayId = mt.DayId,
-                    Foods = mt.Meals.SelectMany(m => m.Foods).Select(f => new FoodDTO
-                    {
-                        Id = f.Id,
-                        Name = f.Name
-                    }).ToList()
-                })
-                .ToListAsync();
-
-            if (mealTimes.Count == 0)
+            if (user == null)
             {
-                return NotFound($"No mealtimes found for the day with ID {dayId}");
+                return Unauthorized("User is not logged in.");
             }
 
+            var userProfile = await _dbContext.UserProfiles
+                .FirstOrDefaultAsync(up => up.IdentityUserId == user.Id);
+
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            var mealTimes = await _dbContext.MealTimes
+                .Include(mt => mt.Meals)
+                .Where(mt => mt.UserProfileId == userProfile.Id)
+                .Select(mt => new MealTimeDTO
+                {
+                    Id = mt.Id,
+                    Name = mt.Name,
+                    UserProfileId = mt.UserProfileId, // Ensure UserProfileId is included in the DTO
+                    Meals = mt.Meals.Select(m => new MealDTO
+                    {
+                        Id = m.Id,
+                        MealTimeId = m.MealTimeId,
+                        FoodId = m.FoodId
+                    }).ToList()
+                })
+                .ToListAsync();
+
             return Ok(mealTimes);
+        }
+
+        // POST: api/mealtime/assign
+        [HttpPost("assign")]
+        [Authorize]
+        public async Task<IActionResult> AssignFoodsToMealTime([FromBody] MealAssignmentDTO mealAssignment)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized("User is not logged in.");
+            }
+
+            var userProfile = await _dbContext.UserProfiles
+                .FirstOrDefaultAsync(up => up.IdentityUserId == user.Id);
+
+            if (userProfile == null)
+            {
+                return NotFound("User profile not found.");
+            }
+
+            var mealTime = await _dbContext.MealTimes
+                .Include(mt => mt.Meals)
+                .FirstOrDefaultAsync(mt => mt.Id == mealAssignment.MealTimeId && mt.UserProfileId == userProfile.Id);
+
+            if (mealTime == null)
+            {
+                return NotFound("MealTime not found.");
+            }
+
+            // Clear existing meals
+            _dbContext.Meals.RemoveRange(mealTime.Meals);
+
+            // Assign new foods to the meal time
+            foreach (var foodId in mealAssignment.FoodIds)
+            {
+                var meal = new Meal
+                {
+                    MealTimeId = mealTime.Id,
+                    FoodId = foodId
+                };
+                _dbContext.Meals.Add(meal);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

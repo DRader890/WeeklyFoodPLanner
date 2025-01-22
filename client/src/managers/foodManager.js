@@ -15,7 +15,7 @@ export const getFoods = async () => {
 
 export const getUsersFoods = async () => {
   try {
-    const response = await fetch(`${apiUrl}/user`, {
+    const response = await fetch(apiUrl, {
       credentials: "same-origin",
     });
     if (!response.ok) {
@@ -42,6 +42,38 @@ export const updateFood = async (foodId, food) => {
     }
   } catch (error) {
     console.error("Error updating food:", error);
+    throw error;
+  }
+};
+
+export const deleteFood = async (foodId) => {
+  try {
+    const response = await fetch(`${apiUrl}/${foodId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete food");
+    }
+  } catch (error) {
+    console.error("Error deleting food:", error);
+    throw error;
+  }
+};
+
+export const addFood = async (food) => {
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(food),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add food");
+    }
+  } catch (error) {
+    console.error("Error adding food:", error);
     throw error;
   }
 };

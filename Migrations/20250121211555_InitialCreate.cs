@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WeeklyFoodPlanner.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSeedDataUpdate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -192,26 +192,6 @@ namespace WeeklyFoodPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MealTimes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DayId = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MealTimes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_MealTimes_Days_DayId",
-                        column: x => x.DayId,
-                        principalTable: "Days",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Foods",
                 columns: table => new
                 {
@@ -233,27 +213,71 @@ namespace WeeklyFoodPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MealTimes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DayId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    UserProfileId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealTimes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MealTimes_Days_DayId",
+                        column: x => x.DayId,
+                        principalTable: "Days",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MealTimes_UserProfiles_UserProfileId",
+                        column: x => x.UserProfileId,
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Meals",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FoodId = table.Column<int>(type: "integer", nullable: false),
                     MealTimeId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Meals", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Meals_Foods_FoodId",
-                        column: x => x.FoodId,
+                        name: "FK_Meals_MealTimes_MealTimeId",
+                        column: x => x.MealTimeId,
+                        principalTable: "MealTimes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MealFood",
+                columns: table => new
+                {
+                    MealsId = table.Column<int>(type: "integer", nullable: false),
+                    FoodsId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealFood", x => new { x.MealsId, x.FoodsId });
+                    table.ForeignKey(
+                        name: "FK_MealFood_Foods_FoodsId",
+                        column: x => x.FoodsId,
                         principalTable: "Foods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Meals_MealTimes_MealTimeId",
-                        column: x => x.MealTimeId,
-                        principalTable: "MealTimes",
+                        name: "FK_MealFood_Meals_MealsId",
+                        column: x => x.MealsId,
+                        principalTable: "Meals",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -263,8 +287,8 @@ namespace WeeklyFoodPlanner.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "1", 0, "8199033d-0a20-4f21-9b9f-fd0425e8ca63", "testuser1@gmail.com", false, false, null, null, null, null, null, false, "2c070461-bcd8-4e54-b5b9-43d1922cfd64", false, null },
-                    { "2", 0, "2b99851a-39ad-45d6-b724-f49a04a65e17", "testuser2@gmail.com", false, false, null, null, null, null, null, false, "331a6778-6364-4ed0-9859-2c4c07d3dfa5", false, null }
+                    { "3", 0, "64de1683-b6ff-46ba-a326-09eb33268f54", "dale@gmail.com", true, false, null, "DALE@GMAIL.COM", "DALE", "AQAAAAIAAYagAAAAEL8E5LSdM7gSoWCUMlPiwkJRsYo8r3VyShqY2GyeT1AQ8N77D5k/y/JK9gaTnxkofw==", null, false, "731091c6-4df1-4c9e-8d22-3e343b215f2a", false, "dale" },
+                    { "4", 0, "2203f113-e6d4-491b-9d88-fa5fdd37385e", "blake@gmail.com", true, false, null, "BLAKE@GMAIL.COM", "BLAKE", "AQAAAAIAAYagAAAAEHEKOGBPPOcAnrsHxZ/iNrknR9BvpDBEaKGav1x5F1lNyQJ+sDymZkhsaFGPzwzEAA==", null, false, "37f72a5d-86f7-4d5e-ba89-455e6d1e7703", false, "blake" }
                 });
 
             migrationBuilder.InsertData(
@@ -282,40 +306,12 @@ namespace WeeklyFoodPlanner.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "MealTimes",
-                columns: new[] { "Id", "DayId", "Name" },
-                values: new object[,]
-                {
-                    { 1, 1, "Breakfast" },
-                    { 2, 1, "Lunch" },
-                    { 3, 1, "Dinner" },
-                    { 4, 2, "Breakfast" },
-                    { 5, 2, "Lunch" },
-                    { 6, 2, "Dinner" },
-                    { 7, 3, "Breakfast" },
-                    { 8, 3, "Lunch" },
-                    { 9, 3, "Dinner" },
-                    { 10, 4, "Breakfast" },
-                    { 11, 4, "Lunch" },
-                    { 12, 4, "Dinner" },
-                    { 13, 5, "Breakfast" },
-                    { 14, 5, "Lunch" },
-                    { 15, 5, "Dinner" },
-                    { 16, 6, "Breakfast" },
-                    { 17, 6, "Lunch" },
-                    { 18, 6, "Dinner" },
-                    { 19, 7, "Breakfast" },
-                    { 20, 7, "Lunch" },
-                    { 21, 7, "Dinner" }
-                });
-
-            migrationBuilder.InsertData(
                 table: "UserProfiles",
                 columns: new[] { "Id", "IdentityUserId" },
                 values: new object[,]
                 {
-                    { 1, "1" },
-                    { 2, "2" }
+                    { 1, "3" },
+                    { 2, "4" }
                 });
 
             migrationBuilder.InsertData(
@@ -327,21 +323,100 @@ namespace WeeklyFoodPlanner.Migrations
                     { 2, "Put in boiling water", "Rice", 1 },
                     { 3, "Put in pan", "Bacon", 1 },
                     { 4, "Put in pan, season", "Eggs", 1 },
-                    { 5, "Crack eggs, cinnamon, sugar, dip bread and put in pan", "French Toast", 2 }
+                    { 5, "Crack eggs, cinnamon, sugar, dip bread and put in pan", "French Toast", 1 },
+                    { 6, "Season and grill", "Steak", 2 },
+                    { 7, "Boil and add sauce", "Pasta", 2 },
+                    { 8, "Chop and mix vegetables", "Salad", 2 },
+                    { 9, "Season and bake", "Fish", 2 },
+                    { 10, "Boil ingredients", "Soup", 2 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "MealTimes",
+                columns: new[] { "Id", "DayId", "Name", "UserProfileId" },
+                values: new object[,]
+                {
+                    { 1, 1, "Breakfast", 1 },
+                    { 2, 1, "Lunch", 1 },
+                    { 3, 1, "Dinner", 1 },
+                    { 4, 2, "Breakfast", 1 },
+                    { 5, 2, "Lunch", 1 },
+                    { 6, 2, "Dinner", 1 },
+                    { 7, 3, "Breakfast", 1 },
+                    { 8, 3, "Lunch", 1 },
+                    { 9, 3, "Dinner", 1 },
+                    { 10, 4, "Breakfast", 1 },
+                    { 11, 4, "Lunch", 1 },
+                    { 12, 4, "Dinner", 1 },
+                    { 13, 5, "Breakfast", 1 },
+                    { 14, 5, "Lunch", 1 },
+                    { 15, 5, "Dinner", 1 },
+                    { 16, 6, "Breakfast", 1 },
+                    { 17, 6, "Lunch", 1 },
+                    { 18, 6, "Dinner", 1 },
+                    { 19, 7, "Breakfast", 1 },
+                    { 20, 7, "Lunch", 1 },
+                    { 21, 7, "Dinner", 1 },
+                    { 22, 1, "Breakfast", 2 },
+                    { 23, 1, "Lunch", 2 },
+                    { 24, 1, "Dinner", 2 },
+                    { 25, 2, "Breakfast", 2 },
+                    { 26, 2, "Lunch", 2 },
+                    { 27, 2, "Dinner", 2 },
+                    { 28, 3, "Breakfast", 2 },
+                    { 29, 3, "Lunch", 2 },
+                    { 30, 3, "Dinner", 2 },
+                    { 31, 4, "Breakfast", 2 },
+                    { 32, 4, "Lunch", 2 },
+                    { 33, 4, "Dinner", 2 },
+                    { 34, 5, "Breakfast", 2 },
+                    { 35, 5, "Lunch", 2 },
+                    { 36, 5, "Dinner", 2 },
+                    { 37, 6, "Breakfast", 2 },
+                    { 38, 6, "Lunch", 2 },
+                    { 39, 6, "Dinner", 2 },
+                    { 40, 7, "Breakfast", 2 },
+                    { 41, 7, "Lunch", 2 },
+                    { 42, 7, "Dinner", 2 }
                 });
 
             migrationBuilder.InsertData(
                 table: "Meals",
-                columns: new[] { "Id", "FoodId", "MealTimeId" },
+                columns: new[] { "Id", "MealTimeId" },
                 values: new object[,]
                 {
-                    { 1, 1, 1 },
-                    { 2, 2, 1 },
-                    { 3, 3, 2 },
-                    { 4, 4, 3 },
-                    { 5, 5, 4 },
-                    { 6, 1, 5 },
-                    { 7, 2, 6 }
+                    { 1, 1 },
+                    { 2, 2 },
+                    { 3, 3 },
+                    { 4, 4 },
+                    { 5, 5 },
+                    { 6, 6 },
+                    { 7, 22 },
+                    { 8, 23 },
+                    { 9, 24 },
+                    { 10, 25 },
+                    { 11, 26 },
+                    { 12, 27 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "MealFood",
+                columns: new[] { "FoodsId", "MealsId" },
+                values: new object[,]
+                {
+                    { 1, 1 },
+                    { 2, 1 },
+                    { 3, 2 },
+                    { 4, 3 },
+                    { 5, 4 },
+                    { 1, 5 },
+                    { 2, 6 },
+                    { 6, 7 },
+                    { 7, 8 },
+                    { 8, 9 },
+                    { 9, 10 },
+                    { 10, 11 },
+                    { 6, 12 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -387,9 +462,9 @@ namespace WeeklyFoodPlanner.Migrations
                 column: "UserProfileId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Meals_FoodId",
-                table: "Meals",
-                column: "FoodId");
+                name: "IX_MealFood_FoodsId",
+                table: "MealFood",
+                column: "FoodsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Meals_MealTimeId",
@@ -400,6 +475,11 @@ namespace WeeklyFoodPlanner.Migrations
                 name: "IX_MealTimes_DayId",
                 table: "MealTimes",
                 column: "DayId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealTimes_UserProfileId",
+                table: "MealTimes",
+                column: "UserProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserProfiles_IdentityUserId",
@@ -426,7 +506,7 @@ namespace WeeklyFoodPlanner.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Meals");
+                name: "MealFood");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -435,13 +515,16 @@ namespace WeeklyFoodPlanner.Migrations
                 name: "Foods");
 
             migrationBuilder.DropTable(
+                name: "Meals");
+
+            migrationBuilder.DropTable(
                 name: "MealTimes");
 
             migrationBuilder.DropTable(
-                name: "UserProfiles");
+                name: "Days");
 
             migrationBuilder.DropTable(
-                name: "Days");
+                name: "UserProfiles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

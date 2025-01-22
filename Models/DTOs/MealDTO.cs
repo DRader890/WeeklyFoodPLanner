@@ -1,8 +1,9 @@
-namespace Foodie.Models.DTOs;
-
-public class MealDTO
+namespace Foodie.Models.DTOs
 {
-    public int Id { get; set; }
-    public int FoodId { get; set; } // Foreign key to Food
-    public int MealTimeId { get; set; } // Foreign key to MealTime
+    public class MealDTO
+    {
+        public int Id { get; set; }
+        public int MealTimeId { get; set; } // Foreign key to MealTime
+        public int FoodId { get; set; } // Foreign Key to Food
+    }
 }

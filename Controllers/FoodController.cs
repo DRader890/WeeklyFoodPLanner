@@ -1,17 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Foodie.Data;
 using Foodie.Models;
 using Foodie.Models.DTOs;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
 
 namespace Foodie.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class FoodController : ControllerBase
     {
         private readonly FoodieDbContext _dbContext;
@@ -23,8 +21,9 @@ namespace Foodie.Controllers
             _userManager = userManager;
         }
 
-        // Get foods of the logged-in user
+        // Get all foods for the logged-in user
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetFoods()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -44,6 +43,13 @@ namespace Foodie.Controllers
 
             var foods = await _dbContext.Foods
                 .Where(f => f.UserProfileId == userProfile.Id)
+                .Select(f => new
+                {
+                    f.Id,
+                    f.Name,
+                    f.Description,
+                    f.UserProfileId
+                })
                 .ToListAsync();
 
             return Ok(foods);
@@ -51,6 +57,7 @@ namespace Foodie.Controllers
 
         // Create a new food item
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateFood([FromBody] FoodDTO foodDto)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -78,11 +85,20 @@ namespace Foodie.Controllers
             _dbContext.Foods.Add(food);
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetFoods), new { id = food.Id }, food);
+            var response = new
+            {
+                food.Id,
+                food.Name,
+                food.Description,
+                food.UserProfileId
+            };
+
+            return CreatedAtAction(nameof(GetFoods), new { id = food.Id }, response);
         }
 
         // Edit an existing food item
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> EditFood(int id, [FromBody] FoodDTO foodDto)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -105,7 +121,7 @@ namespace Foodie.Controllers
 
             if (food == null)
             {
-                return NotFound("Food not found or not authorized to edit.");
+                return NotFound("Food item not found.");
             }
 
             food.Name = foodDto.Name;
@@ -114,11 +130,20 @@ namespace Foodie.Controllers
             _dbContext.Foods.Update(food);
             await _dbContext.SaveChangesAsync();
 
-            return NoContent();
+            var response = new
+            {
+                food.Id,
+                food.Name,
+                food.Description,
+                food.UserProfileId
+            };
+
+            return Ok(response);
         }
 
         // Delete a food item
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteFood(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -141,7 +166,7 @@ namespace Foodie.Controllers
 
             if (food == null)
             {
-                return NotFound("Food not found or not authorized to delete.");
+                return NotFound("Food item not found.");
             }
 
             _dbContext.Foods.Remove(food);
@@ -151,8 +176,3 @@ namespace Foodie.Controllers
         }
     }
 }
-
-
-
-
-

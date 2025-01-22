@@ -1,150 +1,191 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Text;
+using Foodie.Data;
 using Foodie.Models;
 using Foodie.Models.DTOs;
-using Foodie.Data;
+using Microsoft.Extensions.Logging;
 
-namespace Foodie.Controllers;
-
-
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+namespace Foodie.Controllers
 {
-    private FoodieDbContext _dbContext;
-    private UserManager<IdentityUser> _userManager;
-
-    public AuthController(FoodieDbContext context, UserManager<IdentityUser> userManager)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _dbContext = context;
-        _userManager = userManager;
-    }
+        private readonly FoodieDbContext _dbContext;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<AuthController> _logger;
 
-    [HttpPost("login")]
-    public IActionResult Login([FromHeader(Name = "Authorization")] string authHeader)
-    {
-        try
+        public AuthController(FoodieDbContext dbContext, UserManager<IdentityUser> userManager, ILogger<AuthController> logger)
         {
-            string encodedCreds = authHeader.Substring(6).Trim();
-            string creds = Encoding
-            .GetEncoding("iso-8859-1")
-            .GetString(Convert.FromBase64String(encodedCreds));
+            _dbContext = dbContext;
+            _userManager = userManager;
+            _logger = logger;
+        }
 
-            // Get email and password
-            int separator = creds.IndexOf(':');
-            string email = creds.Substring(0, separator);
-            string password = creds.Substring(separator + 1);
-
-            var user = _dbContext.Users.Where(u => u.Email == email).FirstOrDefault();
-            var hasher = new PasswordHasher<IdentityUser>();
-            var result = hasher.VerifyHashedPassword(user, user.PasswordHash, password);
-            if (user != null && result == PasswordVerificationResult.Success)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
+        {
+            try
             {
-                var claims = new List<Claim>
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+                if (user == null)
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email)
+                    return Unauthorized("Invalid email or password.");
+                }
 
-                };
+                var hasher = new PasswordHasher<IdentityUser>();
+                var result = hasher.VerifyHashedPassword(user, user.PasswordHash, loginDto.Password);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.UserName),
+                        new Claim(ClaimTypes.Email, user.Email)
+                    };
 
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-                HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity)).Wait();
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity));
 
+                    return Ok();
+                }
+
+                return Unauthorized("Invalid email or password.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during login.");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet("logout")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return Ok();
             }
-
-            return new UnauthorizedResult();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500);
-        }
-    }
-
-    [HttpGet]
-    [Route("logout")]
-    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-    public IActionResult Logout()
-    {
-        try
-        {
-            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).Wait();
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500);
-        }
-    }
-
-    [HttpGet("Me")]
-    [Authorize]
-    public IActionResult Me()
-    {
-        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var profile = _dbContext.UserProfiles.SingleOrDefault(up => up.IdentityUserId == identityUserId);
-        var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
-        if (profile != null)
-        {
-            var userDto = new UserProfileDTO
+            catch (Exception ex)
             {
-                Id = profile.Id,
-                IdentityUserId = identityUserId,
-                UserName = User.FindFirstValue(ClaimTypes.Name),
-                Email = User.FindFirstValue(ClaimTypes.Email),
-            };
-
-            return Ok(userDto);
+                _logger.LogError(ex, "An error occurred during logout.");
+                return StatusCode(500);
+            }
         }
-        return NotFound();
-    }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(RegistrationDTO registration)
-    {
-        var user = new IdentityUser
+        [HttpGet("Me")]
+        [Authorize]
+        public IActionResult Me()
         {
-            UserName = registration.UserName,
-            Email = registration.Email
-        };
+            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("IdentityUserId: {IdentityUserId}", identityUserId);
 
-        var password = Encoding
-            .GetEncoding("iso-8859-1")
-            .GetString(Convert.FromBase64String(registration.Password));
+            var profile = _dbContext.UserProfiles
+                .Include(up => up.Foods)
+                .Include(up => up.MealTimes)
+                .ThenInclude(mt => mt.Meals)
+                .ThenInclude(m => m.Food)
+                .SingleOrDefault(up => up.IdentityUserId == identityUserId);
 
-        var result = await _userManager.CreateAsync(user, password);
-        if (result.Succeeded)
-        {
-            _dbContext.UserProfiles.Add(new UserProfile
+            if (profile != null)
             {
-                IdentityUserId = user.Id,
-            });
-            _dbContext.SaveChanges();
-
-            var claims = new List<Claim>
+                var userDto = new UserProfileDTO
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email)
-
+                    Id = profile.Id,
+                    IdentityUserId = identityUserId,
+                    UserName = User.FindFirstValue(ClaimTypes.Name),
+                    Email = User.FindFirstValue(ClaimTypes.Email),
+                    Foods = profile.Foods.Select(f => new FoodDTO
+                    {
+                        Id = f.Id,
+                        Name = f.Name,
+                        Description = f.Description,
+                        UserProfileId = f.UserProfileId
+                    }).ToList(),
+                    MealTimes = profile.MealTimes.Select(mt => new MealTimeDTO
+                    {
+                        Id = mt.Id,
+                        Name = mt.Name,
+                        UserProfileId = mt.UserProfileId, // Ensure UserProfileId is included in the DTO
+                        Meals = mt.Meals.Select(m => new MealDTO
+                        {
+                            Id = m.Id,
+                            MealTimeId = m.MealTimeId,
+                            FoodId = m.FoodId
+                        }).ToList()
+                    }).ToList()
                 };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity)).Wait();
+                return Ok(userDto);
+            }
 
-            return Ok();
+            _logger.LogWarning("User profile not found for IdentityUserId: {IdentityUserId}", identityUserId);
+            return NotFound();
         }
-        return StatusCode(500);
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegistrationDTO registration)
+        {
+            try
+            {
+                var user = new IdentityUser
+                {
+                    UserName = registration.UserName,
+                    Email = registration.Email
+                };
+
+                var result = await _userManager.CreateAsync(user, registration.Password);
+                if (result.Succeeded)
+                {
+                    var userProfile = new UserProfile
+                    {
+                        IdentityUserId = user.Id,
+                    };
+                    _dbContext.UserProfiles.Add(userProfile);
+                    await _dbContext.SaveChangesAsync();
+
+                    // Create default MealTimes for the new user
+                    var mealTimes = new List<MealTime>();
+                    for (int day = 1; day <= 7; day++)
+                    {
+                        mealTimes.Add(new MealTime { Name = "Breakfast", UserProfileId = userProfile.Id });
+                        mealTimes.Add(new MealTime { Name = "Lunch", UserProfileId = userProfile.Id });
+                        mealTimes.Add(new MealTime { Name = "Dinner", UserProfileId = userProfile.Id });
+                    }
+                    _dbContext.MealTimes.AddRange(mealTimes);
+                    await _dbContext.SaveChangesAsync();
+
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.UserName),
+                        new Claim(ClaimTypes.Email, user.Email)
+                    };
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity));
+
+                    return Ok();
+                }
+                return StatusCode(500);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during registration.");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

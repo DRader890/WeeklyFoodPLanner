@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Foodie.Models;
-
-public class UserProfile
+namespace Foodie.Models
 {
-    public int Id { get; set; }
-    public string IdentityUserId { get; set; }
-    public IdentityUser IdentityUser { get; set; }
-
-    public List<Food> Foods { get; set; }  // Add this line
+    public class UserProfile
+    {
+        public int Id { get; set; }
+        public string IdentityUserId { get; set; } // Foreign Key to IdentityUser
+        public IdentityUser IdentityUser { get; set; } // Navigation Property to IdentityUser
+        public ICollection<Food> Foods { get; set; } // List of Foods
+        public ICollection<MealTime> MealTimes { get; set; } // List of MealTimes
+    }
 }

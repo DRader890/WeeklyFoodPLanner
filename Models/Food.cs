@@ -1,14 +1,13 @@
-namespace Foodie.Models;
-
-public class Food
+namespace Foodie.Models
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
+    public class Food
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int UserProfileId { get; set; } // Foreign Key to UserProfile
+        public UserProfile UserProfile { get; set; } // Navigation Property to UserProfile
+        public ICollection<Meal> Meals { get; set; } // Navigation Property to Meals
 
-    public int UserProfileId { get; set; }
-    public UserProfile UserProfile { get; set; }
-
-    public List<Meal> Meals { get; set; }
-
+    }
 }

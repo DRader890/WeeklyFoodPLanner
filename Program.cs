@@ -46,7 +46,6 @@ builder.Services.AddIdentityCore<IdentityUser>(config =>
     config.Password.RequireUppercase = false;
     config.User.RequireUniqueEmail = true;
 })
-.AddRoles<IdentityRole>()  // Add the role service
 .AddEntityFrameworkStores<FoodieDbContext>();
 
 // Allows passing DateTimes without time zone data 
@@ -79,10 +78,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Enable CORS
 app.UseCors();
 
-// These two calls are required to add authentication to the pipeline for a request
 app.UseAuthentication();
 app.UseAuthorization();
 

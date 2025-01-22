@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WeeklyFoodPlanner.Migrations
 {
     [DbContext(typeof(FoodieDbContext))]
-    [Migration("20250121172409_newmealtimes")]
-    partial class newmealtimes
+    [Migration("20250122024900_nodays")]
+    partial class nodays
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,60 +24,6 @@ namespace WeeklyFoodPlanner.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Foodie.Models.Day", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Days");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Sunday"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Monday"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Tuesday"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Wednesday"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Thursday"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Friday"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "Saturday"
-                        });
-                });
 
             modelBuilder.Entity("Foodie.Models.Food", b =>
                 {
@@ -139,6 +85,41 @@ namespace WeeklyFoodPlanner.Migrations
                             Description = "Crack eggs, cinnamon, sugar, dip bread and put in pan",
                             Name = "French Toast",
                             UserProfileId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Season and grill",
+                            Name = "Steak",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Boil and add sauce",
+                            Name = "Pasta",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Chop and mix vegetables",
+                            Name = "Salad",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "Season and bake",
+                            Name = "Fish",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Boil ingredients",
+                            Name = "Soup",
+                            UserProfileId = 2
                         });
                 });
 
@@ -150,46 +131,19 @@ namespace WeeklyFoodPlanner.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("FoodId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("MealTimeId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FoodId");
+
                     b.HasIndex("MealTimeId");
 
                     b.ToTable("Meals");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            MealTimeId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            MealTimeId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            MealTimeId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            MealTimeId = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            MealTimeId = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            MealTimeId = 6
-                        });
                 });
 
             modelBuilder.Entity("Foodie.Models.MealTime", b =>
@@ -200,20 +154,16 @@ namespace WeeklyFoodPlanner.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DayId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserProfileId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserProfileId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DayId");
+                    b.HasIndex("UserProfileId");
 
                     b.ToTable("MealTimes");
 
@@ -221,149 +171,254 @@ namespace WeeklyFoodPlanner.Migrations
                         new
                         {
                             Id = 1,
-                            DayId = 1,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 2,
-                            DayId = 1,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 3,
-                            DayId = 1,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 4,
-                            DayId = 2,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 5,
-                            DayId = 2,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 6,
-                            DayId = 2,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 7,
-                            DayId = 3,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 8,
-                            DayId = 3,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 9,
-                            DayId = 3,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 10,
-                            DayId = 4,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 11,
-                            DayId = 4,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 12,
-                            DayId = 4,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 13,
-                            DayId = 5,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 14,
-                            DayId = 5,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 15,
-                            DayId = 5,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 16,
-                            DayId = 6,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 17,
-                            DayId = 6,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 18,
-                            DayId = 6,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 19,
-                            DayId = 7,
                             Name = "Breakfast",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 20,
-                            DayId = 7,
                             Name = "Lunch",
-                            UserProfileId = "1"
+                            UserProfileId = 1
                         },
                         new
                         {
                             Id = 21,
-                            DayId = 7,
                             Name = "Dinner",
-                            UserProfileId = "1"
+                            UserProfileId = 1
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Name = "Dinner",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Name = "Breakfast",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Name = "Lunch",
+                            UserProfileId = 2
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Name = "Dinner",
+                            UserProfileId = 2
                         });
                 });
 
@@ -389,64 +444,12 @@ namespace WeeklyFoodPlanner.Migrations
                         new
                         {
                             Id = 1,
-                            IdentityUserId = "1"
+                            IdentityUserId = "3"
                         },
                         new
                         {
                             Id = 2,
-                            IdentityUserId = "2"
-                        });
-                });
-
-            modelBuilder.Entity("MealFood", b =>
-                {
-                    b.Property<int>("MealsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("FoodsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("MealsId", "FoodsId");
-
-                    b.HasIndex("FoodsId");
-
-                    b.ToTable("MealFood", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            MealsId = 1,
-                            FoodsId = 1
-                        },
-                        new
-                        {
-                            MealsId = 1,
-                            FoodsId = 2
-                        },
-                        new
-                        {
-                            MealsId = 2,
-                            FoodsId = 3
-                        },
-                        new
-                        {
-                            MealsId = 3,
-                            FoodsId = 4
-                        },
-                        new
-                        {
-                            MealsId = 4,
-                            FoodsId = 5
-                        },
-                        new
-                        {
-                            MealsId = 5,
-                            FoodsId = 1
-                        },
-                        new
-                        {
-                            MealsId = 6,
-                            FoodsId = 2
+                            IdentityUserId = "4"
                         });
                 });
 
@@ -567,27 +570,35 @@ namespace WeeklyFoodPlanner.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1",
+                            Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "d335b155-4c4c-4d5d-967a-8458d0f381c3",
-                            Email = "testuser1@gmail.com",
-                            EmailConfirmed = false,
+                            ConcurrencyStamp = "cb0f93e0-caa5-44bf-a1ca-e7a2ac60e81d",
+                            Email = "dale@gmail.com",
+                            EmailConfirmed = true,
                             LockoutEnabled = false,
+                            NormalizedEmail = "DALE@GMAIL.COM",
+                            NormalizedUserName = "DALE",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOQx11MJ879QquMaZpKWixC8zUijS1uYAZniTX5KiY1mlMyZmjaFV2rS7K98v+GYEA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "bc818f4f-a8cd-4340-a13c-4ed6bc2e86e7",
-                            TwoFactorEnabled = false
+                            SecurityStamp = "a9b8e0f0-4c76-4ec7-849a-5597697c1d88",
+                            TwoFactorEnabled = false,
+                            UserName = "dale"
                         },
                         new
                         {
-                            Id = "2",
+                            Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2526fd03-1eef-4247-8cec-06298e5e7563",
-                            Email = "testuser2@gmail.com",
-                            EmailConfirmed = false,
+                            ConcurrencyStamp = "183f4fe9-7406-4b26-bb26-e27188e6d42e",
+                            Email = "blake@gmail.com",
+                            EmailConfirmed = true,
                             LockoutEnabled = false,
+                            NormalizedEmail = "BLAKE@GMAIL.COM",
+                            NormalizedUserName = "BLAKE",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBfl3bvlvDSkEj9goL41REsBksUaV9Ze70cA4CM628fb72szVJR3cDv/JGxIEjdopw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "28b79d9e-a540-4d6f-b509-460090cd20d9",
-                            TwoFactorEnabled = false
+                            SecurityStamp = "6c50fb33-8766-4682-8489-f2523139831f",
+                            TwoFactorEnabled = false,
+                            UserName = "blake"
                         });
                 });
 
@@ -685,24 +696,32 @@ namespace WeeklyFoodPlanner.Migrations
 
             modelBuilder.Entity("Foodie.Models.Meal", b =>
                 {
+                    b.HasOne("Foodie.Models.Food", "Food")
+                        .WithMany("Meals")
+                        .HasForeignKey("FoodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Foodie.Models.MealTime", "MealTime")
                         .WithMany("Meals")
                         .HasForeignKey("MealTimeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Food");
+
                     b.Navigation("MealTime");
                 });
 
             modelBuilder.Entity("Foodie.Models.MealTime", b =>
                 {
-                    b.HasOne("Foodie.Models.Day", "Day")
+                    b.HasOne("Foodie.Models.UserProfile", "UserProfile")
                         .WithMany("MealTimes")
-                        .HasForeignKey("DayId")
+                        .HasForeignKey("UserProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Day");
+                    b.Navigation("UserProfile");
                 });
 
             modelBuilder.Entity("Foodie.Models.UserProfile", b =>
@@ -714,21 +733,6 @@ namespace WeeklyFoodPlanner.Migrations
                         .IsRequired();
 
                     b.Navigation("IdentityUser");
-                });
-
-            modelBuilder.Entity("MealFood", b =>
-                {
-                    b.HasOne("Foodie.Models.Food", null)
-                        .WithMany()
-                        .HasForeignKey("FoodsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foodie.Models.Meal", null)
-                        .WithMany()
-                        .HasForeignKey("MealsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -782,9 +786,9 @@ namespace WeeklyFoodPlanner.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Foodie.Models.Day", b =>
+            modelBuilder.Entity("Foodie.Models.Food", b =>
                 {
-                    b.Navigation("MealTimes");
+                    b.Navigation("Meals");
                 });
 
             modelBuilder.Entity("Foodie.Models.MealTime", b =>
@@ -795,6 +799,8 @@ namespace WeeklyFoodPlanner.Migrations
             modelBuilder.Entity("Foodie.Models.UserProfile", b =>
                 {
                     b.Navigation("Foods");
+
+                    b.Navigation("MealTimes");
                 });
 #pragma warning restore 612, 618
         }
