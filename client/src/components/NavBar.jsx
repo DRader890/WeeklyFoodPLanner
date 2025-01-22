@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink as RRNavLink } from "react-router-dom";
+import { useNavigate, NavLink as RRNavLink } from "react-router-dom";
 import {
   Button,
   Collapse,
@@ -14,8 +14,21 @@ import { logout } from "../managers/authManager";
 
 export default function NavBar({ loggedInUser, setLoggedInUser }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleNavbar = () => setOpen(!open);
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    setOpen(false);
+    try {
+      await logout();
+      setLoggedInUser(null);
+      navigate("/login"); // Navigate to the login page after logout
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <div>
@@ -40,17 +53,7 @@ export default function NavBar({ loggedInUser, setLoggedInUser }) {
                 </NavItem>
               </Nav>
             </Collapse>
-            <Button
-              color="primary"
-              onClick={(e) => {
-                e.preventDefault();
-                setOpen(false);
-                logout().then(() => {
-                  setLoggedInUser(null);
-                  setOpen(false);
-                });
-              }}
-            >
+            <Button color="primary" onClick={handleLogout}>
               Logout
             </Button>
           </>

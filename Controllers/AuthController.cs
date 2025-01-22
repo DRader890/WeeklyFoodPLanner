@@ -55,7 +55,7 @@ namespace Foodie.Controllers
                         CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(claimsIdentity));
 
-                    return Ok();
+                    return Ok(new { message = "Login successful" });
                 }
 
                 return Unauthorized("Invalid email or password.");
@@ -74,7 +74,7 @@ namespace Foodie.Controllers
             try
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return Ok();
+                return Ok(new { message = "Logout successful" });
             }
             catch (Exception ex)
             {
@@ -177,7 +177,7 @@ namespace Foodie.Controllers
                         CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(claimsIdentity));
 
-                    return Ok();
+                    return Ok(new { message = "Registration successful" });
                 }
                 return StatusCode(500);
             }

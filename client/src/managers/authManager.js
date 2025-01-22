@@ -1,29 +1,64 @@
 const _apiUrl = "/api/auth";
 
-export const login = (email, password) => {
-  return fetch(_apiUrl + "/login", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: {
-      Authorization: `Basic ${btoa(`${email}:${password}`)}`,
-    },
-  }).then((res) => {
-    if (res.status !== 200) {
-      return Promise.resolve(null);
-    } else {
-      return tryGetLoggedInUser();
+export const login = async (email, password) => {
+  try {
+    const response = await fetch(_apiUrl + "/login", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json', // Ensure the content type is set to application/json
+      },
+      body: JSON.stringify({ email, password }), // Convert the payload to JSON
+      credentials: "include" // Ensure cookies are sent with the request
+    });
+
+    if (!response.ok) {
+      console.error('Login failed with status:', response.status);
+      throw new Error('Login failed');
     }
-  });
+
+    // No need to handle the token manually, as it is set in an HTTP-only cookie
+    return tryGetLoggedInUser();
+  } catch (error) {
+    console.error('Error logging in:', error);
+    throw error;
+  }
 };
 
-export const logout = () => {
-  return fetch(_apiUrl + "/logout");
+export const logout = async () => {
+  try {
+    const response = await fetch(_apiUrl + "/logout", {
+      method: "GET",
+      credentials: "include" // Ensure cookies are sent with the request
+    });
+
+    if (!response.ok) {
+      throw new Error('Logout failed');
+    }
+
+    localStorage.removeItem('token'); // Remove the token from local storage
+  } catch (error) {
+    console.error('Error logging out:', error);
+    throw error;
+  }
 };
 
-export const tryGetLoggedInUser = () => {
-  return fetch(_apiUrl + "/me").then((res) => {
-    return res.status === 401 ? Promise.resolve(null) : res.json();
-  });
+export const tryGetLoggedInUser = async () => {
+  try {
+    const response = await fetch(_apiUrl + "/me", {
+      method: 'GET',
+      credentials: "include" // Ensure cookies are sent with the request
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching logged in user:', error);
+    return null;
+  }
 };
 
 export const register = async (user) => {
@@ -34,6 +69,7 @@ export const register = async (user) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(user),
+      credentials: "include" // Ensure cookies are sent with the request
     });
     if (!response.ok) {
       throw new Error("Failed to register user");
