@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, CardBody, CardTitle, CardText, Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, CardTitle, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { getMealTimesByUser, assignFoodsToMealTime } from "../../managers/mealTimeManager";
 import { getUsersFoods } from "../../managers/foodManager";
@@ -41,63 +41,59 @@ export default function WeeklyPlanner({ loggedInUser }) {
       await assignFoodsToMealTime(selectedMealTime, updatedFoods);
       const updatedMealTimes = await getMealTimesByUser();
       setMealTimes(updatedMealTimes);
-      setDropdownOpen(false);
     } catch (error) {
-      console.error("Error adding food to mealtime:", error);
+      console.error("Error adding food:", error);
     }
   };
 
-  const handleDeleteFood = async (mealTimeId, foodId) => {
-    try {
-      const mealTime = mealTimes.find(mt => mt.id === mealTimeId);
-      const updatedFoods = mealTime.meals.map(m => m.foodId).filter(id => id !== foodId);
-      await assignFoodsToMealTime(mealTimeId, updatedFoods);
-      const updatedMealTimes = await getMealTimesByUser();
-      setMealTimes(updatedMealTimes);
-    } catch (error) {
-      console.error("Error deleting food from mealtime:", error);
-    }
+  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  // Group meal times by day
+  const mealTimesByDay = daysOfWeek.map((day, index) => ({
+    day,
+    mealTimes: mealTimes.slice(index * 3, index * 3 + 3) // Assuming 3 meal times per day
+  }));
+
+  const getFoodNameById = (foodId) => {
+    const food = foods.find(f => f.id === foodId);
+    return food ? food.name : "Unknown Food";
   };
 
   return (
-    <Container fluid>
-      <h1>Welcome to the Weekly Planner</h1>
-      {loggedInUser && <p>Hello, {loggedInUser.userName}, here's your weekly meals!</p>}
-      <Row>
-        {mealTimes.map((mealTime) => (
-          <Col key={mealTime.id} sm="4">
+    <Container>
+      {mealTimesByDay.map(({ day, mealTimes }, index) => (
+        <Row key={index} className="mb-4">
+          <Col>
             <Card>
               <CardBody>
-                <CardTitle tag="h5">{mealTime.name}</CardTitle>
-                <CardText>
-                  {mealTime.meals.map((meal) => (
-                    <div key={meal.id}>
-                      {foods.find((food) => food.id === meal.foodId)?.name}
-                      <Button
-                        color="danger"
-                        size="sm"
-                        onClick={() => handleDeleteFood(mealTime.id, meal.foodId)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  ))}
-                </CardText>
-                <Dropdown isOpen={dropdownOpen && selectedMealTime === mealTime.id} toggle={() => toggleDropdown(mealTime.id)}>
-                  <DropdownToggle caret>Add Food</DropdownToggle>
-                  <DropdownMenu>
-                    {foods.map((food) => (
-                      <DropdownItem key={food.id} onClick={() => handleAddFood(food.id)}>
-                        {food.name}
-                      </DropdownItem>
-                    ))}
-                  </DropdownMenu>
-                </Dropdown>
+                <CardTitle tag="h5">{day}</CardTitle>
+                {mealTimes.map((mealTime, idx) => (
+                  <div key={idx}>
+                    <strong>{mealTime.name}</strong>
+                    <ul>
+                      {mealTime.meals.map((meal, mealIdx) => (
+                        <li key={mealIdx}>{getFoodNameById(meal.foodId)}</li>
+                      ))}
+                    </ul>
+                    <Dropdown isOpen={dropdownOpen && selectedMealTime === mealTime.id} toggle={() => toggleDropdown(mealTime.id)}>
+                      <DropdownToggle caret>
+                        Select Food
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        {foods.map(food => (
+                          <DropdownItem key={food.id} onClick={() => handleAddFood(food.id)}>
+                            {food.name}
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                ))}
               </CardBody>
             </Card>
           </Col>
-        ))}
-      </Row>
+        </Row>
+      ))}
     </Container>
   );
 }

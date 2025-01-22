@@ -1,33 +1,49 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { tryGetLoggedInUser } from "./managers/authManager";
-import { Spinner } from "reactstrap";
-import NavBar from "./components/NavBar";
-import ApplicationViews from "./components/ApplicationViews";
+import React, { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { Spinner } from 'reactstrap';
+import { tryGetLoggedInUser } from './managers/authManager';
+import NavBar from './components/NavBar';
+import ApplicationViews from './components/ApplicationViews';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import WeeklyPlanner from './components/weeklyplanner/WeeklyPlanner'; // Correct import path
 
 function App() {
-  const [loggedInUser, setLoggedInUser] = useState();
+  const [loggedInUser, setLoggedInUser] = useState(undefined);
 
   useEffect(() => {
-    // user will be null if not authenticated
-    tryGetLoggedInUser().then((user) => {
-      setLoggedInUser(user);
-    });
+    const fetchUser = async () => {
+      try {
+        const user = await tryGetLoggedInUser();
+        setLoggedInUser(user);
+      } catch (error) {
+        console.error('Error fetching logged in user:', error);
+        setLoggedInUser(null);
+      }
+    };
+
+    fetchUser();
   }, []);
 
-  // wait to get a definite logged-in state before rendering
+  // Wait to get a definite logged-in state before rendering
   if (loggedInUser === undefined) {
     return <Spinner />;
   }
 
   return (
     <>
-      <NavBar loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} />
-      <ApplicationViews
-        loggedInUser={loggedInUser}
-        setLoggedInUser={setLoggedInUser}
-      />
+      {loggedInUser ? (
+        <>
+          <NavBar loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} />
+          <ApplicationViews loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} />
+        </>
+      ) : (
+        <Routes>
+          <Route path="/login" element={<Login setLoggedInUser={setLoggedInUser} />} />
+          <Route path="/register" element={<Register setLoggedInUser={setLoggedInUser} />} />
+          <Route path="/" element={<WeeklyPlanner loggedInUser={loggedInUser} />} /> {/* Default to WeeklyPlanner */}
+        </Routes>
+      )}
     </>
   );
 }
