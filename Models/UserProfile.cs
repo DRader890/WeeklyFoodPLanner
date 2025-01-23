@@ -7,7 +7,7 @@ namespace Foodie.Models
         public int Id { get; set; }
         public string IdentityUserId { get; set; } // Foreign Key to IdentityUser
         public IdentityUser IdentityUser { get; set; } // Navigation Property to IdentityUser
-        public ICollection<Food> Foods { get; set; } // List of Foods
-        public ICollection<MealTime> MealTimes { get; set; } // List of MealTimes
+        public ICollection<Food> Foods { get; set; } 
+        public ICollection<MealTime> MealTimes { get; set; } 
     }
 }

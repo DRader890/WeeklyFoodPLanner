@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Foodie.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); // Create a new WebApplicationBuilder
 
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(opts =>
@@ -76,9 +76,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection(); // Redirects HTTP requests to HTTPS
 
-app.UseCors();
+app.UseCors(); // Enable cross-origin requests
 
 app.UseAuthentication();
 app.UseAuthorization();

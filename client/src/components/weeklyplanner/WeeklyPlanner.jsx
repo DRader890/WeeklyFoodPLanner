@@ -15,17 +15,15 @@ export default function WeeklyPlanner({ loggedInUser }) {
     const fetchData = async () => {
       try {
         const mealTimesData = await getMealTimesByUser();
-        console.log("Meal Times Data:", mealTimesData); // Debugging
         setMealTimes(mealTimesData);
-
+  
         const foodsData = await getUsersFoods();
-        console.log("Foods Data:", foodsData); // Debugging
         setFoods(foodsData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
+  
     fetchData();
   }, [loggedInUser]); // Refetch data when loggedInUser changes
 

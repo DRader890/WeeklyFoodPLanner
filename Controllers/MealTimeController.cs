@@ -92,10 +92,10 @@ namespace Foodie.Controllers
             }
 
             // Clear existing meals
-            _dbContext.Meals.RemoveRange(mealTime.Meals);
+            _dbContext.Meals.RemoveRange(mealTime.Meals); // removes all meals associated with the mealTime
 
             // Assign new foods to the meal time
-            foreach (var foodId in mealAssignment.FoodIds)
+            foreach (var foodId in mealAssignment.FoodIds) // iterate through the foodIds in the mealAssignment
             {
                 var meal = new Meal
                 {

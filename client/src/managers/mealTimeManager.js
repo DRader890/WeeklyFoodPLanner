@@ -3,7 +3,7 @@ const apiUrl = "/api/mealtime";
 export const getMealTimes = async () => {
   try {
     const response = await fetch(apiUrl, {
-      credentials: "same-origin",
+      credentials: "include", // Ensure cookies are sent with the request
     });
     if (!response.ok) {
       throw new Error("Failed to fetch meal times");
@@ -18,7 +18,7 @@ export const getMealTimes = async () => {
 export const getMealTimesByUser = async () => {
   try {
     const response = await fetch(`${apiUrl}/user`, {
-      credentials: "same-origin",
+      credentials: "include", // Ensure cookies are sent with the request
     });
     if (!response.ok) {
       throw new Error("Failed to fetch meal times by user");
@@ -34,7 +34,7 @@ export const assignFoodsToMealTime = async (mealTimeId, foodIds) => {
   try {
     const response = await fetch(`${apiUrl}/assign`, {
       method: "POST",
-      credentials: "same-origin",
+      credentials: "include", // Ensure cookies are sent with the request
       headers: {
         "Content-Type": "application/json",
       },
