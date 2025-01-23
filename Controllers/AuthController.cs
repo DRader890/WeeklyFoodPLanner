@@ -16,11 +16,11 @@ namespace Foodie.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly FoodieDbContext _dbContext;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly FoodieDbContext _dbContext; // allows controller to perform crud
+        private readonly UserManager<IdentityUser> _userManager; // manages user related operations
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(FoodieDbContext dbContext, UserManager<IdentityUser> userManager, ILogger<AuthController> logger)
+        public AuthController(FoodieDbContext dbContext, UserManager<IdentityUser> userManager, ILogger<AuthController> logger) // new instance of the controller that takes in 3 parameters to be used in the controller
         {
             _dbContext = dbContext;
             _userManager = userManager;

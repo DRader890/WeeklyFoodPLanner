@@ -5,21 +5,21 @@ using Foodie.Models;
 
 namespace Foodie.Data
 {
-    public class FoodieDbContext : IdentityDbContext<IdentityUser>
+    public class FoodieDbContext : IdentityDbContext<IdentityUser> // Inherit from IdentityDbContext
     {
-        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; } // setting up  a table for UserProfiles to be stored in the database
         public DbSet<Food> Foods { get; set; }
         public DbSet<MealTime> MealTimes { get; set; }
         public DbSet<Meal> Meals { get; set; }
 
-        public FoodieDbContext(DbContextOptions<FoodieDbContext> options) : base(options) { }
+        public FoodieDbContext(DbContextOptions<FoodieDbContext> options) : base(options) { } // allow options to be passed to the base class
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder) // method to configure models
         {
             base.OnModelCreating(modelBuilder);
 
             // Meal ↔ MealTime (Many-to-One)
-            modelBuilder.Entity<Meal>()
+            modelBuilder.Entity<Meal>()  // moldelBuilder.Entity<entityName> method is used to configure the entity
                 .HasOne(m => m.MealTime)
                 .WithMany(mt => mt.Meals)
                 .HasForeignKey(m => m.MealTimeId);
@@ -32,7 +32,7 @@ namespace Foodie.Data
 
             // Ensure UserProfileId is included in MealTime
             modelBuilder.Entity<MealTime>()
-                .Property(mt => mt.UserProfileId)
+                .Property(mt => mt.UserProfileId) // propery method to ensure UserProfileId is included in MealTime
                 .IsRequired();
 
             // UserProfile ↔ MealTime (One-to-Many)
@@ -56,7 +56,7 @@ namespace Foodie.Data
                 .HasForeignKey(up => up.IdentityUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Seed IdentityUser with only Email (without UserName)
+            
             modelBuilder.Entity<IdentityUser>().HasData(
                 new IdentityUser
                 {

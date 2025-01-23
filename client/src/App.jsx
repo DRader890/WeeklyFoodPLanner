@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import { tryGetLoggedInUser } from './managers/authManager';
 import NavBar from './components/NavBar';
 import ApplicationViews from './components/ApplicationViews';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import WeeklyPlanner from './components/weeklyplanner/WeeklyPlanner'; // Correct import path
+import WeeklyPlanner from './components/weeklyplanner/WeeklyPlanner'; 
 
 function App() {
   const [loggedInUser, setLoggedInUser] = useState(undefined);
@@ -21,7 +21,7 @@ function App() {
         setLoggedInUser(null);
       }
     };
-
+  
     fetchUser();
   }, []);
 
@@ -41,7 +41,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login setLoggedInUser={setLoggedInUser} />} />
           <Route path="/register" element={<Register setLoggedInUser={setLoggedInUser} />} />
-          <Route path="/" element={<WeeklyPlanner loggedInUser={loggedInUser} />} /> {/* Default to WeeklyPlanner */}
+          <Route path="/" element={<Navigate to="/login" />} /> {/* Redirect to login */}
         </Routes>
       )}
     </>

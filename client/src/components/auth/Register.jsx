@@ -28,7 +28,7 @@ export default function Register({ setLoggedInUser }) {
       register(newUser).then((user) => {
         if (user) {
           setLoggedInUser(user);
-          navigate("/"); // Navigate to the WeeklyPlanner page after successful registration
+          navigate("/"); // navigate to the weeklyplanner page after successful registration
         } else {
           setRegistrationFailure(true);
         }
