@@ -1,0 +1,51 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .smaller-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+  
+  .container-full-width {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .large-input {
+    padding: 0.75rem;
+    font-size: 1.25rem;
+    width: 100%; /* Ensure the input fields take up the full width of their container */
+    max-width: 500px; /* Set a maximum width for the input fields */
+  }
