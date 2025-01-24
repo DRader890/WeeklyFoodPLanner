@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, CardBody, CardTitle, Dropdown, DropdownToggl
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { getMealTimesByUser, assignFoodsToMealTime } from "../../managers/mealTimeManager";
 import { getUsersFoods } from "../../managers/foodManager";
-import './WeeklyPlanner.css'; // Import custom CSS
+import '../styles/styles.css'; // Import shared CSS
 
 export default function WeeklyPlanner({ loggedInUser }) {
   const [mealTimes, setMealTimes] = useState([]);

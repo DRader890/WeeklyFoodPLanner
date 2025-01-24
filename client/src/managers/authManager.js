@@ -1,28 +1,27 @@
 const _apiUrl = "/api/auth";
 
-export const login = async (email, password) => {
+export async function login(credentials) {
   try {
-    const response = await fetch(_apiUrl + "/login", {
-      method: "POST",
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // Ensure the content type is set to application/json
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }), // Convert the payload to JSON
-      credentials: "include" // Ensure cookies are sent with the request
+      body: JSON.stringify(credentials),
     });
 
     if (!response.ok) {
-      console.error('Login failed with status:', response.status);
+      console.error(`Login failed with status: ${response.status}`);
       throw new Error('Login failed');
     }
 
-    // No need to handle the token manually, as it is set in an HTTP-only cookie
-    return tryGetLoggedInUser();
+    const user = await response.json();
+    return user;
   } catch (error) {
     console.error('Error logging in:', error);
     throw error;
   }
-};
+}
 
 export const logout = async () => {
   try {
